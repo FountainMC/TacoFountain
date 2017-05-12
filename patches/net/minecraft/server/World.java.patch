@@ -1,0 +1,28 @@
+--- /home/nicholas/git/TacoFountain/work/unpatched/net/minecraft/server/World.java
++++ /home/nicholas/git/TacoFountain/patched/net/minecraft/server/World.java
+@@ -157,20 +157,25 @@
+     public Chunk getChunkIfLoaded(BlockPosition blockposition) {
+         return this.chunkProvider.getLoadedChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+     }
+     // Paper end
+ 
++    // Fountain start
++    private final
++    // Fountian end
++
+     public Chunk getChunkIfLoaded(int x, int z) {
+         return ((ChunkProviderServer) this.chunkProvider).getChunkIfLoaded(x, z);
+     }
+ 
+     protected World(IDataManager idatamanager, WorldData worlddata, WorldProvider worldprovider, MethodProfiler methodprofiler, boolean flag, ChunkGenerator gen, org.bukkit.World.Environment env) {
+         this.spigotConfig = new org.spigotmc.SpigotWorldConfig( worlddata.getName() ); // Spigot
+         this.paperConfig = new com.destroystokyo.paper.PaperWorldConfig(worlddata.getName(), this.spigotConfig); // Paper
+         this.tacoSpigotConfig = new net.techcable.tacospigot.TacoSpigotWorldConfig(worlddata.getName()); // TacoSpigot
+         this.generator = gen;
+         this.world = new CraftWorld((WorldServer) this, gen, env);
++        this.f
+         this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
+         this.ticksPerMonsterSpawns = this.getServer().getTicksPerMonsterSpawns(); // CraftBukkit
+         // CraftBukkit end
+         this.u = Lists.newArrayList(new IWorldAccess[] { this.t});
+         this.L = Calendar.getInstance();

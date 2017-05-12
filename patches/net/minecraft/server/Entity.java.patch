@@ -1,0 +1,73 @@
+--- /home/nicholas/git/TacoFountain/work/unpatched/net/minecraft/server/Entity.java
++++ /home/nicholas/git/TacoFountain/patched/net/minecraft/server/Entity.java
+@@ -10,10 +10,11 @@
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Random;
+ import java.util.Set;
+ import java.util.UUID;
++import javax.annotation.Nonnull;
+ import javax.annotation.Nullable;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
+ // CraftBukkit start
+@@ -38,10 +39,11 @@
+ import org.bukkit.craftbukkit.event.CraftEventFactory;
+ import org.bukkit.event.entity.EntityAirChangeEvent;
+ import org.bukkit.event.entity.EntityCombustEvent;
+ import org.bukkit.event.entity.EntityPortalEvent;
+ import org.bukkit.plugin.PluginManager;
++import org.fountainmc.taco.entities.FountainEntity;
+ // CraftBukkit end
+ 
+ public abstract class Entity implements ICommandListener {
+ 
+     // CraftBukkit start
+@@ -59,10 +61,22 @@
+             bukkitEntity = CraftEntity.getEntity(world.getServer(), this);
+         }
+         return bukkitEntity;
+     }
+     // CraftBukikt end
++    // Fountain start
++    private FountainEntity fountainEntity;
++    @Nonnull
++    public FountainEntity getFountainEntity() {
++        // Why does bukkit do lazy initialization here?
++        FountainEntity fountainEntity = this.fountainEntity;
++        if (fountainEntity == null) {
++            this.fountainEntity = fountainEntity = FountainEntity.Companion.createWrapper(getBukkitEntity());
++        }
++        return fountainEntity;
++    }
++    // Fountain end
+ 
+     private static final Logger a = LogManager.getLogger();
+     private static final List<ItemStack> b = Collections.emptyList();
+     private static final AxisAlignedBB c = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+     private static double f = 1.0D;
+@@ -1874,10 +1888,11 @@
+ 
+     public boolean startRiding(Entity entity) {
+         return this.a(entity, false);
+     }
+ 
++    public final boolean startRiding(Entity entity, boolean force) { return this.a(entity, force); } // Fountain - OBFHELPER
+     public boolean a(Entity entity, boolean flag) {
+         for (Entity entity1 = entity; entity1.au != null; entity1 = entity1.au) {
+             if (entity1.au == this) {
+                 return false;
+             }
+@@ -1894,10 +1909,11 @@
+             this.au.o(this);
+             return true;
+         }
+     }
+ 
++    public final boolean canBeRiddenBy(Entity passenger) { return this.n(passenger); } // Fountain - OBFHELPER
+     protected boolean n(Entity entity) {
+         return this.j <= 0;
+     }
+ 
+     public void az() {

@@ -1,0 +1,209 @@
+buildscript {
+    ext.kotlin_version = '1.1.2-2'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: "maven"
+apply plugin: "java"
+apply plugin: "kotlin"
+
+ext.minecraft_version = "1.11.2"
+ext.bukkit_version = "$minecraft_version-R0.1-SNAPSHOT"
+group = 'org.fountainmc'
+version = "$minecraft_version-R0.1-SNAPSHOT"
+
+apply from: project(":api").file("utils.gradle")
+ext.versionSignature = ext.rawComputeVersionSignature(version)
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.techcable.net/content/groups/public/" }
+    maven { url "https://repo.destroystokyo.com/repository/maven-public/" }
+    maven { url "https://oss.sonatype.org/content/groups/public/" }
+    maven { url "https://libraries.minecraft.net/" }
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version" // Include kotlin reflection too
+    /*
+     * NOTE: Override guava version to mojang's version
+     * TODO: Figure out how to reconcile this with FountainAPI's modern version.
+     */
+    compile "com.google.guava:guava:17.0"
+    compile "it.unimi.dsi:fastutil:7.2.0" // NOTE: Include the entire fastutil jar
+    // Use log4j as the underlying logging implementation, instead of bukkit's hacky java.util.Logger emulation.
+    compile "org.slf4j:slf4j-log4j12:$slf4j_version"
+    compile project(":api")
+    // Use lombok because lazy
+    compileOnly "org.projectlombok:lombok:1.16.16"
+    // CraftBukkit dependencies
+    compile "com.destroystokyo.paper:paper-api:$bukkit_version" // NOTE: Compile against Paper API since they stay more up to date
+    compile "jline:jline:2.12.1"
+    compile "net.sf.trove4j:trove4j:3.0.3" // Why do they still use trove?
+}
+
+sourceSets {
+    main {
+        java.srcDir("patched") // Include the patched sources too
+    }
+}
+
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+jar {
+    inputs.property("versionSignature", versionSignature) // Recompute manifest when signature changes
+    manifest {
+        attributes(
+                "Implementation-Title": "TacoFountain",
+                "Implementation-Version": versionSignature,
+                "Implementation-Vendor": "FountainMC Team",
+        )
+    }
+}
+
+ext.includedServerLibraries = [
+        // Server libraries
+        "net.sf.jopt-simple:jopt-simple"  : true,
+        "io.netty:netty-all"              : true,
+        "com.mojang:authlib": true,
+        "org.apache.commons:*": true, // Allow all apache commons
+        "commons-*:commons-*": true, // Allow old commons too
+        "org.apache.httpcomponents:*": true,
+        // Client only libs
+        "com.ibm.icu:icu4j-core-mojang"   : false,
+        "com.paulscode:*"                 : false, // All the paulscode things are client-only
+        "net.java.dev.jna:*"              : false, // JNA is client only
+        "net.java.jinput:jinput": false,
+        "net.java.jutils:jutils": false,
+        "com.mojang:realms": false,
+        // Overridden libraries
+        "com.google.guava:guava:17.0"     : false, // We override the version of guava
+        "com.google.code.gson:gson:2.2.4": false, // We also override the version of gson
+        "it.unimi.dsi:fastutil:7.0.12_mojang": false, // We override with the entire fastutil jar
+        // Other
+        "oshi-project:oshi-core"          : false, // What is this?
+        "com.mojang:netty"                : false, // Use regular netty instead of mojang netty
+]
+
+for (library in determineServerLibraries(minecraft_version)) {
+    dependencies.add("compile", library)
+}
+
+Set<String> determineServerLibraries(String version) {
+    Map<String, Boolean> shouldInclude = ext.includedServerLibraries
+    // Regexes for libraries to include
+    List<Tuple2<Pattern, Boolean>> shouldIncludePatterns = []
+    shouldInclude.forEach { key, value ->
+        if ('*' in key) {
+            def resultBuilder = new StringBuilder()
+            for (c in key.chars) {
+                if (c == ('*' as char)) {
+                    resultBuilder.append(".*")
+                } else {
+                    resultBuilder.append(Pattern.quote(c.toString()))
+                }
+            }
+            def pattern = Pattern.compile(resultBuilder.toString())
+            shouldIncludePatterns.add(new Tuple2(pattern, value))
+        }
+    }
+    Set<String> includedLibraries = []
+    for (library in parseNmsLibraries(version)) {
+        def parts = library.split(":")
+        assert parts.length == 3, "Unexpected library: $library"
+        def libraryId = "${parts[0]}:${parts[1]}"
+        def include = shouldInclude[libraryId]
+        if (include == null) {
+            include = shouldInclude.each {
+                if (it.key.matches(libraryId)) {
+                    return it.value
+                }
+            }
+        }
+        assert include != null, "Unknown library must be explicitly included/excluded: $library"
+        if (include) {
+            logger.debug("Including $library")
+            includedLibraries.add(library)
+        } else {
+            logger.debug("Excludign $library")
+        }
+    }
+    return includedLibraries
+}
+
+import groovy.json.JsonSlurper
+
+import java.util.regex.Pattern
+
+List<String> parseNmsLibraries(String version) {
+    List<String> libraries = []
+    def json = parseVersionInfo(version)
+    for (library in json["libraries"]) {
+        def id = library["name"]
+        assert id != null
+        libraries.add(id)
+    }
+    return libraries
+}
+
+Object parseVersionInfo(String version) {
+    def versionFile = file("work/versions/version-${version}.json")
+    if (!versionFile.exists()) {
+        versionFile.parentFile.mkdirs()
+        def versionManifest = parseVersionManifest()
+        if (versionManifest == null) {
+            logger.info("Downloading version manifest")
+            versionManifest = parseVersionManifest(download: true)
+        } else if (!version in versionManifest) {
+            logger.warn("Refreshing version manifest since $version not found!")
+            versionManifest = parseVersionManifest(download: true)
+        }
+        def versionUrl = versionManifest[version]
+        if (versionUrl == null) {
+            throw new IllegalArgumentException("Couldn't find version in version manifest: $version")
+        }
+        logger.info("Downloading version info for $version")
+        versionUrl.withReader { reader ->
+            versionFile.withWriter { writer ->
+                writer << reader
+            }
+        }
+    }
+    return new JsonSlurper().parse(versionFile)
+}
+
+Map<String, URL> parseVersionManifest(def download = false) {
+    Map<String, URL> result = [:]
+    def versionManifestJson = file("work/versions/version_manifest.json")
+    if (download) {
+        versionManifestJson.parentFile.mkdirs()
+        versionManifestJson.withWriter { writer ->
+            new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json").withReader { reader ->
+                writer << reader
+            }
+        }
+    } else if (!versionManifestJson.exists()) {
+        return null
+    }
+    def json = new JsonSlurper().parse(versionManifestJson)
+    for (version in json["versions"]) {
+        String id = version["id"]
+        URL url = new URL(version["url"] as String)
+        result[id] = url
+    }
+    return result
+}

@@ -1,0 +1,5 @@
+rootProject.name = 'taco-fountain'
+
+include ":api"
+
+project(":api").projectDir = file("$rootDir/FountainAPI")

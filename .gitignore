@@ -1,0 +1,16 @@
+# Python
+__pycache__
+.mypy_cache
+
+# Intellij
+.idea
+*.iml
+
+# Gradle
+build
+.gradle
+.gradletasknamecache
+
+# Hacky build system
+work
+patched
