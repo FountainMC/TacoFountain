@@ -1,5 +1,5 @@
---- /home/nicholas/git/TacoFountain/work/unpatched/net/minecraft/server/MinecraftServer.java
-+++ /home/nicholas/git/TacoFountain/patched/net/minecraft/server/MinecraftServer.java
+---work/unpatched/net/minecraft/server/MinecraftServer.java
++++patched/net/minecraft/server/MinecraftServer.java
 @@ -1,10 +1,9 @@
  package net.minecraft.server;
  
@@ -11,7 +11,7 @@
  import com.google.common.util.concurrent.ListenableFutureTask;
  import com.mojang.authlib.GameProfile;
  import com.mojang.authlib.GameProfileRepository;
-@@ -25,30 +24,30 @@
+@@ -25,31 +25,29 @@
  import java.text.SimpleDateFormat;
  import java.util.ArrayList;
  import java.util.Arrays;
@@ -45,7 +45,7 @@
  
  public abstract class MinecraftServer implements Runnable, ICommandListener, IAsyncTaskHandler, IMojangStatistics {
  
-@@ -122,10 +121,15 @@
+@@ -122,10 +122,15 @@
      // CraftBukkit end
      // Spigot start
      public final SlackActivityAccountant slackActivityAccountant = new SlackActivityAccountant();
@@ -61,7 +61,7 @@
          io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable
          this.e = proxy;
          this.V = yggdrasilauthenticationservice;
-@@ -348,10 +352,11 @@
+@@ -348,10 +348,11 @@
              collideTeam.setCanSeeFriendlyInvisibles(false); // Because we want to mimic them not being on a team at all
          }
          // Paper end
@@ -73,7 +73,7 @@
          boolean flag1 = true;
          boolean flag2 = true;
          boolean flag3 = true;
-@@ -1230,10 +1235,11 @@
+@@ -1230,10 +1230,11 @@
  
      public int P() {
          return this.u;

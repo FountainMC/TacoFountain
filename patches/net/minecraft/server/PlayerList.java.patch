@@ -1,5 +1,5 @@
---- /home/nicholas/git/TacoFountain/work/unpatched/net/minecraft/server/PlayerList.java
-+++ /home/nicholas/git/TacoFountain/patched/net/minecraft/server/PlayerList.java
+---work/unpatched/net/minecraft/server/PlayerList.java
++++patched/net/minecraft/server/PlayerList.java
 @@ -1,8 +1,10 @@
  package net.minecraft.server;
  
@@ -11,7 +11,7 @@
  import com.google.common.collect.Sets;
  import com.mojang.authlib.GameProfile;
  import io.netty.buffer.Unpooled;
-@@ -39,10 +41,11 @@
+@@ -39,10 +39,11 @@
  import org.bukkit.event.player.PlayerLoginEvent;
  import org.bukkit.event.player.PlayerQuitEvent;
  import org.bukkit.event.player.PlayerRespawnEvent;
@@ -23,7 +23,7 @@
  
  public abstract class PlayerList {
  
-@@ -66,20 +69,27 @@
+@@ -66,20 +66,28 @@
      private int r;
      private EnumGamemode s;
      private boolean t;
