@@ -6,7 +6,7 @@ import org.fountainmc.api.world.Location
 import org.fountainmc.taco.TacoFountianWorld
 import org.fountainmc.taco.entities.FountainEntity
 
-fun org.bukkit.World.toFountain() = (this as CraftWorld).fountainWorld
+fun org.bukkit.World.toFountain() = (this as CraftWorld).fountainWorld!!
 
 fun org.bukkit.Location.toFountain(): Location {
     return Location(this.world.toFountain(), this.x, this.y, this.z)

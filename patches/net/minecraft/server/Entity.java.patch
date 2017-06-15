@@ -1,5 +1,5 @@
----work/unpatched/net/minecraft/server/Entity.java
-+++patched/net/minecraft/server/Entity.java
+--- work/unpatched/net/minecraft/server/Entity.java
++++ patched/net/minecraft/server/Entity.java
 @@ -10,10 +10,11 @@
  import java.util.Iterator;
  import java.util.List;
@@ -12,7 +12,7 @@
  import org.apache.logging.log4j.Logger;
  
  // CraftBukkit start
-@@ -38,10 +38,11 @@
+@@ -38,10 +39,11 @@
  import org.bukkit.craftbukkit.event.CraftEventFactory;
  import org.bukkit.event.entity.EntityAirChangeEvent;
  import org.bukkit.event.entity.EntityCombustEvent;
@@ -24,7 +24,7 @@
  public abstract class Entity implements ICommandListener {
  
      // CraftBukkit start
-@@ -59,10 +59,22 @@
+@@ -59,10 +61,22 @@
              bukkitEntity = CraftEntity.getEntity(world.getServer(), this);
          }
          return bukkitEntity;
@@ -47,7 +47,7 @@
      private static final List<ItemStack> b = Collections.emptyList();
      private static final AxisAlignedBB c = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
      private static double f = 1.0D;
-@@ -1874,10 +1874,11 @@
+@@ -1889,10 +1903,11 @@
  
      public boolean startRiding(Entity entity) {
          return this.a(entity, false);
@@ -59,7 +59,7 @@
              if (entity1.au == this) {
                  return false;
              }
-@@ -1894,10 +1894,11 @@
+@@ -1909,10 +1924,11 @@
              this.au.o(this);
              return true;
          }
@@ -70,4 +70,4 @@
          return this.j <= 0;
      }
  
-     public void az() {
+     public void ejectPassengers() {

@@ -1,6 +1,6 @@
----work/unpatched/net/minecraft/server/DedicatedServer.java
-+++patched/net/minecraft/server/DedicatedServer.java
-@@ -2,14 +2,14 @@
+--- work/unpatched/net/minecraft/server/DedicatedServer.java
++++ patched/net/minecraft/server/DedicatedServer.java
+@@ -2,14 +2,13 @@
  
  import com.google.common.collect.Lists;
  import com.mojang.authlib.GameProfileRepository;
@@ -13,10 +13,10 @@
 -import java.io.InputStreamReader;
  import java.net.InetAddress;
  import java.net.Proxy;
+ import java.nio.charset.StandardCharsets;
  import java.util.Collections;
  import java.util.List;
- import java.util.Random;
-@@ -25,10 +25,11 @@
+@@ -26,10 +25,11 @@
  import org.bukkit.craftbukkit.LoggerOutputStream;
  import co.aikar.timings.MinecraftTimings; // Paper
  import org.bukkit.event.server.ServerCommandEvent;
@@ -28,7 +28,7 @@
  public class DedicatedServer extends MinecraftServer implements IMinecraftServer {
  
      private static final Logger LOGGER = LogManager.getLogger();
-@@ -41,10 +41,18 @@
+@@ -42,10 +42,18 @@
      private EULA r;
      private boolean generateStructures;
      private EnumGamemode t;

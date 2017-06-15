@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.1.2-2'
+    ext.kotlin_version = '1.1.2-5'
     repositories {
         mavenCentral()
     }
@@ -12,7 +12,7 @@ apply plugin: "maven"
 apply plugin: "java"
 apply plugin: "kotlin"
 
-ext.minecraft_version = "1.11.2"
+ext.minecraft_version = "1.12"
 ext.bukkit_version = "$minecraft_version-R0.1-SNAPSHOT"
 group = 'org.fountainmc'
 version = "$minecraft_version-R0.1-SNAPSHOT"
@@ -43,8 +43,6 @@ dependencies {
     // Use log4j as the underlying logging implementation, instead of bukkit's hacky java.util.Logger emulation.
     compile "org.slf4j:slf4j-log4j12:$slf4j_version"
     compile project(":api")
-    // Use lombok because lazy
-    compileOnly "org.projectlombok:lombok:1.16.16"
     // CraftBukkit dependencies
     compile "com.destroystokyo.paper:paper-api:$bukkit_version" // NOTE: Compile against Paper API since they stay more up to date
     compile "jline:jline:2.12.1"
@@ -81,21 +79,26 @@ ext.includedServerLibraries = [
         "io.netty:netty-all"              : true,
         "com.mojang:authlib": true,
         "org.apache.commons:*": true, // Allow all apache commons
-        "commons-*:commons-*": true, // Allow old commons too
-        "org.apache.httpcomponents:*": true,
+        "commons-*:commons-*": true, // Allow all old commons too
+        "com.google.guava:guava"     : true, // Everybody loves guava
+        "com.google.code.gson:gson" : true, // Everybody loves gson
+        "org.apache.logging.log4j:*": true, // Log4j is the server's logging system
         // Client only libs
         "com.ibm.icu:icu4j-core-mojang"   : false,
         "com.paulscode:*"                 : false, // All the paulscode things are client-only
         "net.java.dev.jna:*"              : false, // JNA is client only
-        "net.java.jinput:jinput": false,
+        "org.apache.httpcomponents:*": true, // Apache HTTP is client-only
+        "org.lwjgl.lwjgl:*": true, // LWJGL is client-only
+        "net.java.jinput:*": false,
         "net.java.jutils:jutils": false,
         "com.mojang:realms": false,
+        "com.mojang:text2speech": false, // I didn't know minecraft had this
+        "ca.weblite:java-objc-bridge": false,
         // Overridden libraries
-        "com.google.guava:guava:17.0"     : false, // We override the version of guava
-        "com.google.code.gson:gson:2.2.4": false, // We also override the version of gson
-        "it.unimi.dsi:fastutil:7.0.12_mojang": false, // We override with the entire fastutil jar
+        "it.unimi.dsi:fastutil": false, // We override with the entire fastutil jar
         // Other
         "oshi-project:oshi-core"          : false, // What is this?
+        "com.mojang:patchy"             : false, // What is this?
         "com.mojang:netty"                : false, // Use regular netty instead of mojang netty
 ]
 
@@ -108,13 +111,13 @@ Set<String> determineServerLibraries(String version) {
     // Regexes for libraries to include
     List<Tuple2<Pattern, Boolean>> shouldIncludePatterns = []
     shouldInclude.forEach { key, value ->
-        if ('*' in key) {
+        if (key.contains('*')) {
             def resultBuilder = new StringBuilder()
             for (c in key.chars) {
                 if (c == ('*' as char)) {
                     resultBuilder.append(".*")
                 } else {
-                    resultBuilder.append(Pattern.quote(c.toString()))
+                    resultBuilder.append(c.toString())
                 }
             }
             def pattern = Pattern.compile(resultBuilder.toString())
@@ -128,13 +131,12 @@ Set<String> determineServerLibraries(String version) {
         def libraryId = "${parts[0]}:${parts[1]}"
         def include = shouldInclude[libraryId]
         if (include == null) {
-            include = shouldInclude.each {
-                if (it.key.matches(libraryId)) {
-                    return it.value
-                }
+            include = shouldIncludePatterns.findResult {
+                def pattern = it.first
+                pattern.matcher(libraryId).matches() ? it.second : null
             }
         }
-        assert include != null, "Unknown library must be explicitly included/excluded: $library"
+        assert include != null, "Unknown library must be explicitly included/excluded: $libraryId via patterns $shouldIncludePatterns"
         if (include) {
             logger.debug("Including $library")
             includedLibraries.add(library)
@@ -168,7 +170,7 @@ Object parseVersionInfo(String version) {
         if (versionManifest == null) {
             logger.info("Downloading version manifest")
             versionManifest = parseVersionManifest(download: true)
-        } else if (!version in versionManifest) {
+        } else if (!(version in versionManifest)) {
             logger.warn("Refreshing version manifest since $version not found!")
             versionManifest = parseVersionManifest(download: true)
         }

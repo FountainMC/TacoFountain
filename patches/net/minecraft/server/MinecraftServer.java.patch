@@ -1,9 +1,8 @@
----work/unpatched/net/minecraft/server/MinecraftServer.java
-+++patched/net/minecraft/server/MinecraftServer.java
-@@ -1,10 +1,9 @@
+--- work/unpatched/net/minecraft/server/MinecraftServer.java
++++ patched/net/minecraft/server/MinecraftServer.java
+@@ -1,9 +1,8 @@
  package net.minecraft.server;
  
- import com.google.common.base.Charsets;
  import com.google.common.collect.Lists;
 -import com.google.common.collect.Queues;
  import com.google.common.util.concurrent.Futures;
@@ -11,7 +10,7 @@
  import com.google.common.util.concurrent.ListenableFutureTask;
  import com.mojang.authlib.GameProfile;
  import com.mojang.authlib.GameProfileRepository;
-@@ -25,31 +25,29 @@
+@@ -25,29 +24,29 @@
  import java.text.SimpleDateFormat;
  import java.util.ArrayList;
  import java.util.Arrays;
@@ -32,7 +31,6 @@
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
  // CraftBukkit start
- import jline.console.ConsoleReader;
  import joptsimple.OptionSet;
 -import org.bukkit.Bukkit;
 -import org.bukkit.craftbukkit.CraftServer;
@@ -43,9 +41,9 @@
  import org.spigotmc.SlackActivityAccountant; // Spigot
  import co.aikar.timings.MinecraftTimings; // Paper
  
- public abstract class MinecraftServer implements Runnable, ICommandListener, IAsyncTaskHandler, IMojangStatistics {
+ public abstract class MinecraftServer implements ICommandListener, Runnable, IAsyncTaskHandler, IMojangStatistics {
  
-@@ -122,10 +122,15 @@
+@@ -122,10 +121,15 @@
      // CraftBukkit end
      // Spigot start
      public final SlackActivityAccountant slackActivityAccountant = new SlackActivityAccountant();
@@ -61,7 +59,7 @@
          io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable
          this.e = proxy;
          this.V = yggdrasilauthenticationservice;
-@@ -348,10 +348,11 @@
+@@ -352,10 +356,11 @@
              collideTeam.setCanSeeFriendlyInvisibles(false); // Because we want to mimic them not being on a team at all
          }
          // Paper end
@@ -73,7 +71,7 @@
          boolean flag1 = true;
          boolean flag2 = true;
          boolean flag3 = true;
-@@ -1230,10 +1230,11 @@
+@@ -1247,10 +1252,11 @@
  
      public int P() {
          return this.u;

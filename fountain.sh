@@ -45,7 +45,7 @@ checkDependency mvn Maven
 export PYTHON_DIRS=("scripts")
 
 downloadPythonDependency "argh" "0.26.2"
-downloadPythonDependency "diffutils" "1.0.5"
+downloadPythonDependency "diffutils" "1.0.6"
 
 export PYTHONPATH
 PYTHONPATH="$(join_by ':' "${PYTHON_DIRS[@]}")"

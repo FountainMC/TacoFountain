@@ -1,6 +1,6 @@
----work/unpatched/net/minecraft/server/World.java
-+++patched/net/minecraft/server/World.java
-@@ -157,20 +157,28 @@
+--- work/unpatched/net/minecraft/server/World.java
++++ patched/net/minecraft/server/World.java
+@@ -159,20 +159,25 @@
      public Chunk getChunkIfLoaded(BlockPosition blockposition) {
          return this.chunkProvider.getLoadedChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4);
      }
@@ -25,4 +25,4 @@
          this.ticksPerMonsterSpawns = this.getServer().getTicksPerMonsterSpawns(); // CraftBukkit
          // CraftBukkit end
          this.u = Lists.newArrayList(new IWorldAccess[] { this.t});
-         this.L = Calendar.getInstance();
+         this.N = Calendar.getInstance();
