@@ -1,0 +1,11 @@
+--- work/unfixed/net/minecraft/server/ChatBaseComponent.java
++++ work/unmapped/net/minecraft/server/ChatBaseComponent.java
+@@ -57,7 +57,7 @@
+     }
+ 
+     public Iterator<IChatBaseComponent> iterator() {
+-        return Iterators.concat(Iterators.forArray(new ChatBaseComponent[] { this}), a((Iterable) this.a));
++        return Iterators.concat((Iterator) Iterators.forArray(new ChatBaseComponent[] { this}), a((Iterable) this.a));
+     }
+ 
+     public final String toPlainText() {

@@ -43,31 +43,31 @@
 +    }
 +    // Fountain end
  
-     private static final Logger a = LogManager.getLogger();
-     private static final List<ItemStack> b = Collections.emptyList();
-     private static final AxisAlignedBB c = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
-     private static double f = 1.0D;
+     private static final Logger LOGGER = LogManager.getLogger();
+     private static final List<ItemStack> EMPTY_EQUIPMENT = Collections.emptyList();
+     private static final AxisAlignedBB ZERO_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+     private static double renderDistanceWeight = 1.0D;
 @@ -1889,10 +1903,11 @@
  
      public boolean startRiding(Entity entity) {
-         return this.a(entity, false);
+         return this.startRiding(entity, false);
      }
  
 +    public final boolean startRiding(Entity entity, boolean force) { return this.a(entity, force); } // Fountain - OBFHELPER
-     public boolean a(Entity entity, boolean flag) {
-         for (Entity entity1 = entity; entity1.au != null; entity1 = entity1.au) {
-             if (entity1.au == this) {
+     public boolean startRiding(Entity entity, boolean flag) {
+         for (Entity entity1 = entity; entity1.ridingEntity != null; entity1 = entity1.ridingEntity) {
+             if (entity1.ridingEntity == this) {
                  return false;
              }
 @@ -1909,10 +1924,11 @@
-             this.au.o(this);
+             this.ridingEntity.addPassenger(this);
              return true;
          }
      }
  
 +    public final boolean canBeRiddenBy(Entity passenger) { return this.n(passenger); } // Fountain - OBFHELPER
-     protected boolean n(Entity entity) {
-         return this.j <= 0;
+     protected boolean canBeRidden(Entity entity) {
+         return this.rideCooldown <= 0;
      }
  
      public void ejectPassengers() {

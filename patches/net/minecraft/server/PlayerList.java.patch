@@ -23,10 +23,10 @@
  public abstract class PlayerList {
  
 @@ -67,19 +69,28 @@
-     private int s;
-     private EnumGamemode t;
-     private boolean u;
-     private int v;
+     private int viewDistance;
+     private EnumGamemode gameType;
+     private boolean commandsAllowedForAll;
+     private int playerPingIndex;
  
 +    // Fountain start
 +    private final TacoFountainServer fountainServer;
@@ -47,7 +47,7 @@
 +        this.fountainServer = new TacoFountainServer((DedicatedServer) minecraftserver, this);
 +        // Fountain end
  
-         this.k = new GameProfileBanList(PlayerList.a);
-         this.l = new IpBanList(PlayerList.b);
-         this.operators = new OpList(PlayerList.c);
-         this.whitelist = new WhiteList(PlayerList.d);
+         this.bannedPlayers = new GameProfileBanList(PlayerList.FILE_PLAYERBANS);
+         this.bannedIPs = new IpBanList(PlayerList.FILE_IPBANS);
+         this.operators = new OpList(PlayerList.FILE_OPS);
+         this.whitelist = new WhiteList(PlayerList.FILE_WHITELIST);

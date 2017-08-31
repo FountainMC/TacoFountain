@@ -75,137 +75,18 @@ jar {
 
 ext.includedServerLibraries = [
         // Server libraries
-        "net.sf.jopt-simple:jopt-simple"  : true,
-        "io.netty:netty-all"              : true,
-        "com.mojang:authlib": true,
-        "org.apache.commons:*": true, // Allow all apache commons
-        "commons-*:commons-*": true, // Allow all old commons too
-        "com.google.guava:guava"     : true, // Everybody loves guava
-        "com.google.code.gson:gson" : true, // Everybody loves gson
-        "org.apache.logging.log4j:*": true, // Log4j is the server's logging system
-        // Client only libs
-        "com.ibm.icu:icu4j-core-mojang"   : false,
-        "com.paulscode:*"                 : false, // All the paulscode things are client-only
-        "net.java.dev.jna:*"              : false, // JNA is client only
-        "org.apache.httpcomponents:*": true, // Apache HTTP is client-only
-        "org.lwjgl.lwjgl:*": true, // LWJGL is client-only
-        "net.java.jinput:*": false,
-        "net.java.jutils:jutils": false,
-        "com.mojang:realms": false,
-        "com.mojang:text2speech": false, // I didn't know minecraft had this
-        "ca.weblite:java-objc-bridge": false,
-        // Overridden libraries
-        "it.unimi.dsi:fastutil": false, // We override with the entire fastutil jar
-        // Other
-        "oshi-project:oshi-core"          : false, // What is this?
-        "com.mojang:patchy"             : false, // What is this?
-        "com.mojang:netty"                : false, // Use regular netty instead of mojang netty
+        
 ]
 
 for (library in determineServerLibraries(minecraft_version)) {
     dependencies.add("compile", library)
 }
 
-Set<String> determineServerLibraries(String version) {
-    Map<String, Boolean> shouldInclude = ext.includedServerLibraries
-    // Regexes for libraries to include
-    List<Tuple2<Pattern, Boolean>> shouldIncludePatterns = []
-    shouldInclude.forEach { key, value ->
-        if (key.contains('*')) {
-            def resultBuilder = new StringBuilder()
-            for (c in key.chars) {
-                if (c == ('*' as char)) {
-                    resultBuilder.append(".*")
-                } else {
-                    resultBuilder.append(c.toString())
-                }
-            }
-            def pattern = Pattern.compile(resultBuilder.toString())
-            shouldIncludePatterns.add(new Tuple2(pattern, value))
-        }
-    }
-    Set<String> includedLibraries = []
-    for (library in parseNmsLibraries(version)) {
-        def parts = library.split(":")
-        assert parts.length == 3, "Unexpected library: $library"
-        def libraryId = "${parts[0]}:${parts[1]}"
-        def include = shouldInclude[libraryId]
-        if (include == null) {
-            include = shouldIncludePatterns.findResult {
-                def pattern = it.first
-                pattern.matcher(libraryId).matches() ? it.second : null
-            }
-        }
-        assert include != null, "Unknown library must be explicitly included/excluded: $libraryId via patterns $shouldIncludePatterns"
-        if (include) {
-            logger.debug("Including $library")
-            includedLibraries.add(library)
-        } else {
-            logger.debug("Excludign $library")
-        }
-    }
-    return includedLibraries
-}
-
 import groovy.json.JsonSlurper
-
-import java.util.regex.Pattern
-
-List<String> parseNmsLibraries(String version) {
-    List<String> libraries = []
-    def json = parseVersionInfo(version)
-    for (library in json["libraries"]) {
-        def id = library["name"]
-        assert id != null
-        libraries.add(id)
-    }
-    return libraries
+Set<String> determineServerLibraries(String version) {
+    def prog = "fountain.sh print-server-classpath ${ext.minecraft_version}".exec()
+    assert prog.waitFor() == 0, "Failed to execute print-server-classpath!"
+    def slurper = new JsonSlurper()
+    return slurper.parseText(prog.text.trim())
 }
 
-Object parseVersionInfo(String version) {
-    def versionFile = file("work/versions/version-${version}.json")
-    if (!versionFile.exists()) {
-        versionFile.parentFile.mkdirs()
-        def versionManifest = parseVersionManifest()
-        if (versionManifest == null) {
-            logger.info("Downloading version manifest")
-            versionManifest = parseVersionManifest(download: true)
-        } else if (!(version in versionManifest)) {
-            logger.warn("Refreshing version manifest since $version not found!")
-            versionManifest = parseVersionManifest(download: true)
-        }
-        def versionUrl = versionManifest[version]
-        if (versionUrl == null) {
-            throw new IllegalArgumentException("Couldn't find version in version manifest: $version")
-        }
-        logger.info("Downloading version info for $version")
-        versionUrl.withReader { reader ->
-            versionFile.withWriter { writer ->
-                writer << reader
-            }
-        }
-    }
-    return new JsonSlurper().parse(versionFile)
-}
-
-Map<String, URL> parseVersionManifest(def download = false) {
-    Map<String, URL> result = [:]
-    def versionManifestJson = file("work/versions/version_manifest.json")
-    if (download) {
-        versionManifestJson.parentFile.mkdirs()
-        versionManifestJson.withWriter { writer ->
-            new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json").withReader { reader ->
-                writer << reader
-            }
-        }
-    } else if (!versionManifestJson.exists()) {
-        return null
-    }
-    def json = new JsonSlurper().parse(versionManifestJson)
-    for (version in json["versions"]) {
-        String id = version["id"]
-        URL url = new URL(version["url"] as String)
-        result[id] = url
-    }
-    return result
-}

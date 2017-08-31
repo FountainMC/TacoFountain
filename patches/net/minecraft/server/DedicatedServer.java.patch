@@ -29,10 +29,10 @@
  
      private static final Logger LOGGER = LogManager.getLogger();
 @@ -42,10 +42,18 @@
-     private EULA r;
+     private EULA eula;
      private boolean generateStructures;
-     private EnumGamemode t;
-     private boolean u;
+     private EnumGamemode gameType;
+     private boolean guiIsEnabled;
  
 +    // Fountain start
 +    @Override

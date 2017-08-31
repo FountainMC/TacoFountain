@@ -57,8 +57,8 @@
      public MinecraftServer(OptionSet options, Proxy proxy, DataConverterManager dataconvertermanager, YggdrasilAuthenticationService yggdrasilauthenticationservice, MinecraftSessionService minecraftsessionservice, GameProfileRepository gameprofilerepository, UserCache usercache) {
          SERVER = this; // Paper - better singleton
          io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable
-         this.e = proxy;
-         this.V = yggdrasilauthenticationservice;
+         this.serverProxy = proxy;
+         this.authService = yggdrasilauthenticationservice;
 @@ -352,10 +356,11 @@
              collideTeam.setCanSeeFriendlyInvisibles(false); // Because we want to mimic them not being on a team at all
          }
@@ -66,20 +66,20 @@
      }
  
 +
-     protected void l() {
+     protected void initialWorldChunkLoad() {
          boolean flag = true;
          boolean flag1 = true;
          boolean flag2 = true;
          boolean flag3 = true;
 @@ -1247,10 +1252,11 @@
  
-     public int P() {
-         return this.u;
+     public int getServerPort() {
+         return this.serverPort;
      }
  
 +    public final int getPort() { return this.u; } // Fountain - OBFHELPER
      public void setPort(int i) {
-         this.u = i;
+         this.serverPort = i;
      }
  
-     public String Q() {
+     public String getServerOwner() {

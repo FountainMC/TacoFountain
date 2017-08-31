@@ -1,0 +1,13 @@
+--- work/unfixed/net/minecraft/server/ChunkProviderDebug.java
++++ work/unmapped/net/minecraft/server/ChunkProviderDebug.java
+@@ -85,8 +85,8 @@
+    }
+ 
+    static {
+-      for(Block var1 : Block.REGISTRY) {
+-         c.addAll(var1.s().a());
++      for(Object var1 : Block.REGISTRY) {
++         c.addAll(((Block) var1).s().a());
+       }
+ 
+       d = MathHelper.f(MathHelper.c((float)c.size()));

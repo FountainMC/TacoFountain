@@ -1,6 +1,7 @@
 # Python
 __pycache__
 .mypy_cache
+*.class
 
 # Intellij
 .idea
@@ -14,3 +15,6 @@ build
 # Hacky build system
 work
 patched
+
+# Overly large files
+buildData/errors.json
